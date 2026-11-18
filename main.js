@@ -3,20 +3,25 @@
 
   var root = document.documentElement;
 
-  // Theme: follows the OS until the visitor picks one; the pick is remembered when storage allows.
+  // Theme: System (follows the OS) by default; the button cycles System → Light → Dark → System.
+  // Light or Dark is remembered when storage allows; going back to System forgets the pick.
   var toggle = document.querySelector('.theme-toggle');
   var themeMeta = document.querySelector('meta[name="theme-color"]');
   var darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  var NEXT = { system: 'light', light: 'dark', dark: 'system' };
+  var NAMES = { system: 'system', light: 'light', dark: 'dark' };
 
-  function currentTheme() {
+  function currentMode() {
     var chosen = root.getAttribute('data-theme');
-    if (chosen === 'light' || chosen === 'dark') return chosen;
-    return darkQuery && darkQuery.matches ? 'dark' : 'light';
+    return chosen === 'light' || chosen === 'dark' ? chosen : 'system';
   }
 
   function syncThemeUi() {
     if (toggle) {
-      toggle.setAttribute('aria-label', currentTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+      var mode = currentMode();
+      toggle.setAttribute('data-mode', mode);
+      toggle.setAttribute('title', 'Theme: ' + NAMES[mode]);
+      toggle.setAttribute('aria-label', 'Theme: ' + NAMES[mode] + '. Switch to ' + NAMES[NEXT[mode]] + ' theme');
     }
     if (themeMeta) {
       var paper = getComputedStyle(root).getPropertyValue('--paper').trim();
@@ -26,11 +31,19 @@
 
   if (toggle) {
     toggle.addEventListener('click', function () {
-      var next = currentTheme() === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
+      var next = NEXT[currentMode()];
       try {
-        localStorage.setItem('theme', next);
-      } catch (e) {}
+        if (next === 'system') {
+          root.removeAttribute('data-theme');
+          localStorage.removeItem('theme');
+        } else {
+          root.setAttribute('data-theme', next);
+          localStorage.setItem('theme', next);
+        }
+      } catch (e) {
+        if (next === 'system') root.removeAttribute('data-theme');
+        else root.setAttribute('data-theme', next);
+      }
       syncThemeUi();
     });
   }
