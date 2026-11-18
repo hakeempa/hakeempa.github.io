@@ -486,6 +486,35 @@ a:hover {
   border-top: 2px solid var(--ink);
 }
 
+.project__shot {
+  display: block;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--panel);
+  aspect-ratio: 16 / 9;
+}
+
+.project__shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.4s ease;
+}
+
+.project__shot:hover img {
+  transform: scale(1.03);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project__shot img {
+    transition: none;
+  }
+}
+
 .project__name {
   font-size: clamp(1.35rem, 2.2vw, 1.625rem);
   font-weight: 750;
